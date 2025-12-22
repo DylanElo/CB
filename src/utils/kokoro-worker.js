@@ -21,8 +21,8 @@ self.onmessage = async (e) => {
                 }
 
                 console.log(`Loading Kokoro with device: ${device}`);
-                tts = await KokoroTTS.from_pretrained(modelId || "onnx-community/Kokoro-82M-ONNX", {
-                    dtype: dtype || "q4", // Use q4 for faster inference
+                tts = await KokoroTTS.from_pretrained(modelId || "onnx-community/Kokoro-82M-v1.0-ONNX", {
+                    dtype: dtype || "q8", // Use q8 for better quality (q4 can be artifact-heavy)
                     device: device,
                     progress_callback: (items) => {
                         try {
