@@ -1,0 +1,21 @@
+{
+    "short_name": "BookReader",
+    "name": "BookReader - Liseuse Vocale",
+    "icons": [
+        {
+            "src": "icon-512.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#FDFBF7",
+    "background_color": "#FDFBF7",
+    "orientation": "portrait"
+}
