@@ -1,3 +1,16 @@
+// Force single-threading to avoid SharedArrayBuffer/COOP issues on hosting platforms
+// This prevents the "function signature mismatch" error in onnxruntime-web
+try {
+    if (typeof window !== 'undefined' && window.navigator) {
+        Object.defineProperty(window.navigator, 'hardwareConcurrency', {
+            get: () => 1,
+            configurable: true
+        });
+    }
+} catch (e) {
+    console.warn("Could not patch hardwareConcurrency:", e);
+}
+
 import * as tts from '@mintplex-labs/piper-tts-web';
 
 // Piper voices - using high quality English voices
