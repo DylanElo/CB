@@ -1,9 +1,9 @@
 const CACHE_NAME = 'bookreader-v3';
 const ASSETS = [
-    '/',
-    '/index.html',
-    '/manifest.json',
-    '/vite.svg'
+    './',
+    'index.html',
+    'manifest.json',
+    'vite.svg'
 ];
 
 self.addEventListener('install', (event) => {
