@@ -4,13 +4,13 @@ let loadPromise = null;
 
 // Popula voices for Kokoro
 export const KOKORO_VOICES = [
-    { id: 'af_heart', name: 'Heart (American Female)', provider: 'Local' },
-    { id: 'af_bella', name: 'Bella (American Soft)', provider: 'Local' },
-    { id: 'af_sarah', name: 'Sarah (American Direct)', provider: 'Local' },
-    { id: 'af_nicole', name: 'Nicole (American Professional)', provider: 'Local' },
-    { id: 'am_adam', name: 'Adam (American Male)', provider: 'Local' },
-    { id: 'bf_emma', name: 'Emma (British Female)', provider: 'Local' },
-    { id: 'bm_george', name: 'George (British Male)', provider: 'Local' }
+    { id: 'af_heart', name: 'Heart (American Female)', lang: 'en-US', provider: 'Local' },
+    { id: 'af_bella', name: 'Bella (American Soft)', lang: 'en-US', provider: 'Local' },
+    { id: 'af_sarah', name: 'Sarah (American Direct)', lang: 'en-US', provider: 'Local' },
+    { id: 'af_nicole', name: 'Nicole (American Professional)', lang: 'en-US', provider: 'Local' },
+    { id: 'am_adam', name: 'Adam (American Male)', lang: 'en-US', provider: 'Local' },
+    { id: 'bf_emma', name: 'Emma (British Female)', lang: 'en-GB', provider: 'Local' },
+    { id: 'bm_george', name: 'George (British Male)', lang: 'en-GB', provider: 'Local' }
 ];
 
 const getWorker = () => {

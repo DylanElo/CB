@@ -15,6 +15,8 @@ import {
   Key
 } from 'lucide-react';
 import './App.css';
+import { PIPER_VOICES, loadPiperModel, generatePiperAudio } from './utils/piper-engine';
+import { KOKORO_VOICES, loadKokoroModel, generateKokoroAudio } from './utils/kokoro-engine';
 
 // Using only Standard Web Speech API for reliability
 
@@ -53,9 +55,22 @@ function App() {
 
   useEffect(() => {
     const loadVoices = () => {
-      const availableVoices = synth.getVoices();
-      if (availableVoices.length > 0) {
-        const sorted = sortVoices(availableVoices);
+      const standardVoices = synth.getVoices().map(v => ({
+        name: v.name,
+        lang: v.lang,
+        voiceURI: v.voiceURI,
+        provider: 'standard',
+        original: v
+      }));
+
+      const allVoices = [
+        ...standardVoices,
+        ...PIPER_VOICES,
+        ...KOKORO_VOICES
+      ];
+
+      if (allVoices.length > 0) {
+        const sorted = sortVoices(allVoices);
         setVoices(sorted);
 
         if (!selectedVoice) {
@@ -78,8 +93,8 @@ function App() {
 
   const sortVoices = (vList) => {
     return [...vList].sort((a, b) => {
-      const langA = a.lang.toLowerCase();
-      const langB = b.lang.toLowerCase();
+      const langA = (a.lang || '').toLowerCase();
+      const langB = (b.lang || '').toLowerCase();
       if (langA.includes('fr') && !langB.includes('fr')) return -1;
       if (!langA.includes('fr') && langB.includes('fr')) return 1;
       return a.name.localeCompare(b.name);
@@ -151,7 +166,7 @@ function App() {
 
     const chunk = chunks.current[currentChunkIndex.current];
 
-    if (provider === 'local') {
+    if (selectedVoice?.provider && selectedVoice.provider !== 'standard') {
       await speakLocalNeuralChunk(chunk);
     } else {
       speakStandardChunk(chunk);
@@ -160,8 +175,8 @@ function App() {
 
   const speakStandardChunk = (chunk) => {
     const utterance = new SpeechSynthesisUtterance(chunk);
-    if (selectedVoice && !selectedVoice.provider) {
-      utterance.voice = selectedVoice;
+    if (selectedVoice && selectedVoice.provider === 'standard' && selectedVoice.original) {
+      utterance.voice = selectedVoice.original;
       utterance.lang = selectedVoice.lang;
     }
     utterance.onend = () => {
@@ -176,14 +191,30 @@ function App() {
 
   const speakLocalNeuralChunk = async (chunk) => {
     try {
-      if (modelLoading) return; // Wait if already loading
+      if (isLoading) return; // Wait if already loading
 
-      const blob = await generateMeSpeakAudio(chunk, selectedVoice?.id || 'en/en-us');
-      playAudioBlob(blob);
+      setIsLoading(true);
+      let blob = null;
+
+      if (selectedVoice.provider === 'Piper') {
+        await loadPiperModel(selectedVoice.id);
+        blob = await generatePiperAudio(chunk, selectedVoice.id);
+      } else if (selectedVoice.provider === 'Local') {
+        await loadKokoroModel();
+        blob = await generateKokoroAudio(chunk, selectedVoice.id);
+      }
+
+      if (blob) {
+        playAudioBlob(blob);
+      } else {
+        throw new Error("No audio generated");
+      }
     } catch (err) {
       console.error(err);
-      alert("Erreur Local Neural: Le modèle n'a pas pu être chargé.");
+      alert("Erreur Neural: Le modèle n'a pas pu être chargé ou généré.");
       setIsSpeaking(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
