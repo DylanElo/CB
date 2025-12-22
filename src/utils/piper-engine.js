@@ -27,14 +27,8 @@ let modelDownloaded = false;
 // We need to define the WASM paths manually to force single-threaded execution
 // for onnxruntime-web, avoiding the "function signature mismatch" error.
 const WASM_PATHS = {
-    // Point to local single-threaded WASM file.
-    // We pass an object map to ensure onnxruntime loads strictly this file for SIMD.
-    // Note: The library passes this to ort.env.wasm.wasmPaths.
-    onnxWasm: {
-        'ort-wasm-simd.wasm': 'ort-wasm-simd.wasm',
-        'ort-wasm-simd-threaded.wasm': 'ort-wasm-simd.wasm', // Fallback just in case
-        'ort-wasm.wasm': 'ort-wasm-simd.wasm'
-    },
+    // Force single-threaded WASM file
+    onnxWasm: 'https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.18.0/ort-wasm-simd.wasm',
     // Default Piper WASM paths (copied from library source defaults)
     piperData: 'https://huggingface.co/rhasspy/piper-neural-strip/resolve/main/piper_0.1.0.data',
     piperWasm: 'https://huggingface.co/rhasspy/piper-neural-strip/resolve/main/piper_0.1.0.wasm'

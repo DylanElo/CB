@@ -3,8 +3,7 @@ const ASSETS = [
     './',
     'index.html',
     'manifest.json',
-    'vite.svg',
-    'ort-wasm-simd.wasm'
+    'vite.svg'
 ];
 
 self.addEventListener('install', (event) => {
