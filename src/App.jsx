@@ -121,7 +121,7 @@ function App() {
         processText(result.value);
       }
       stopReading();
-    } catch (err) {
+    } catch (_err) {
       alert("Erreur de lecture");
     } finally {
       setIsLoading(false);
