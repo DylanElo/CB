@@ -122,6 +122,7 @@ function App() {
       }
       stopReading();
     } catch (err) {
+      console.error(err);
       alert("Erreur de lecture");
     } finally {
       setIsLoading(false);
@@ -267,15 +268,35 @@ function App() {
     setProgress(0);
   };
 
+  const handleVoiceKeyDown = (e, voice) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setSelectedVoice(voice);
+      stopReading();
+    }
+  };
+
+  const handleUploadKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      const input = e.currentTarget.querySelector('input');
+      input?.click();
+    }
+  };
+
   return (
     <div className="app-container">
       <header className="header">
         <div className="logo-container">
-          <Book className="logo-icon" color={COLORS.primary} size={28} />
+          <Book className="logo-icon" color={COLORS.primary} size={28} aria-hidden="true" />
           <h1>Liseuse Vocale 3.0</h1>
         </div>
-        <button className="icon-button" onClick={() => setShowSettings(true)}>
-          <Settings size={24} />
+        <button
+          className="icon-button"
+          onClick={() => setShowSettings(true)}
+          aria-label="Paramètres"
+        >
+          <Settings size={24} aria-hidden="true" />
         </button>
       </header>
 
@@ -288,15 +309,21 @@ function App() {
           </div>
         ) : (
           <div className="empty-state">
-            <div className="empty-icon-wrap"><BookOpen size={80} color="#DDD" /></div>
+            <div className="empty-icon-wrap"><BookOpen size={80} color="#DDD" aria-hidden="true" /></div>
             <h2>Prêt pour une lecture AI?</h2>
             <p>Importez un livre et activez le mode "Neural (Gratuit)"</p>
-            <label className="upload-button">
-              <Upload size={20} />
+            <label
+              className="upload-button"
+              tabIndex="0"
+              role="button"
+              onKeyDown={handleUploadKeyDown}
+              aria-label="Charger un livre"
+            >
+              <Upload size={20} aria-hidden="true" />
               <span>Charger un livre</span>
               <input type="file" accept=".txt,.docx" onChange={handleFileUpload} hidden />
             </label>
-            {isLoading && <div className="loader"></div>}
+            {isLoading && <div className="loader" role="status" aria-label="Chargement en cours"></div>}
           </div>
         )}
       </main>
@@ -304,26 +331,45 @@ function App() {
       {paraList.length > 0 && (
         <div className="player-bar-container fade-in">
           <div className="player-bar-extended">
-            <div className="progress-container">
+            <div
+              className="progress-container"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-label="Progression de la lecture"
+            >
               <div className="progress-fill" style={{ width: `${progress}%` }}></div>
             </div>
             <div className="player-main">
               <div className="player-info">
                 <div className="voice-tag">
-                  {provider !== 'standard' ? <Sparkles size={14} color={COLORS.local} /> : <Volume2 size={14} />}
+                  {provider !== 'standard' ? <Sparkles size={14} color={COLORS.local} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}
                   <span>{selectedVoice ? selectedVoice.name : "Voix par défaut"}</span>
                 </div>
                 <div className="progress-text">{progress}% lu</div>
               </div>
               <div className="player-controls">
-                <button className="control-button stop" onClick={stopReading}>
-                  <Square size={18} fill={COLORS.error} color={COLORS.error} />
+                <button
+                  className="control-button stop"
+                  onClick={stopReading}
+                  aria-label="Arrêter la lecture"
+                >
+                  <Square size={18} fill={COLORS.error} color={COLORS.error} aria-hidden="true" />
                 </button>
-                <button className="play-button" onClick={isSpeaking ? pauseReading : startReading}>
-                  {isSpeaking ? <Pause size={28} fill="#FFF" /> : <Play size={28} fill="#FFF" />}
+                <button
+                  className="play-button"
+                  onClick={isSpeaking ? pauseReading : startReading}
+                  aria-label={isSpeaking ? "Pause" : "Lire"}
+                >
+                  {isSpeaking ? <Pause size={28} fill="#FFF" aria-hidden="true" /> : <Play size={28} fill="#FFF" aria-hidden="true" />}
                 </button>
-                <button className="control-button" onClick={() => setShowSettings(true)}>
-                  <Settings size={20} />
+                <button
+                  className="control-button"
+                  onClick={() => setShowSettings(true)}
+                  aria-label="Paramètres de lecture"
+                >
+                  <Settings size={20} aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -333,17 +379,37 @@ function App() {
 
       {showSettings && (
         <div className="modal-overlay" onClick={() => setShowSettings(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div
+            className="modal-content"
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+          >
             <div className="modal-header">
-              <h2>Options de Narration</h2>
-              <button className="icon-button" onClick={() => setShowSettings(false)}><X size={24} /></button>
+              <h2 id="modal-title">Options de Narration</h2>
+              <button
+                className="icon-button"
+                onClick={() => setShowSettings(false)}
+                aria-label="Fermer les paramètres"
+              >
+                <X size={24} aria-hidden="true" />
+              </button>
             </div>
 
             <div className="setting-section">
-              <label>Voix de Lecture</label>
-              <div className="voice-list">
+              <label id="voice-label">Voix de Lecture</label>
+              <div className="voice-list" role="listbox" aria-labelledby="voice-label">
                 {voices.map((v, i) => (
-                  <div key={v.voiceURI || i} className={`voice-item ${selectedVoice?.voiceURI === v.voiceURI ? 'active' : ''}`} onClick={() => { setSelectedVoice(v); stopReading(); }}>
+                  <div
+                    key={v.voiceURI || i}
+                    className={`voice-item ${selectedVoice?.voiceURI === v.voiceURI ? 'active' : ''}`}
+                    onClick={() => { setSelectedVoice(v); stopReading(); }}
+                    role="option"
+                    aria-selected={selectedVoice?.voiceURI === v.voiceURI}
+                    tabIndex="0"
+                    onKeyDown={(e) => handleVoiceKeyDown(e, v)}
+                  >
                     <div className="voice-name">{v.name}</div>
                     <div className="voice-lang">{v.lang}</div>
                   </div>
