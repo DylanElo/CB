@@ -28,10 +28,12 @@ let modelDownloaded = false;
 // for onnxruntime-web, avoiding the "function signature mismatch" error.
 const WASM_PATHS = {
     // Point to local directory containing WASM files.
-    // onnxruntime-web treats this string as a prefix path.
-    // We have placed both ort-wasm-simd.wasm and ort-wasm-simd-threaded.wasm (as a copy)
-    // in the public root, so './' is the correct path.
-    onnxWasm: './',
+    // We provide an explicit map to ensure robust path resolution relative to the app base.
+    onnxWasm: {
+        'ort-wasm-simd.wasm': './ort-wasm-simd.wasm',
+        'ort-wasm-simd-threaded.wasm': './ort-wasm-simd-threaded.wasm',
+        'ort-wasm.wasm': './ort-wasm-simd.wasm'
+    },
     // Default Piper WASM paths (copied from library source defaults)
     piperData: 'https://huggingface.co/rhasspy/piper-neural-strip/resolve/main/piper_0.1.0.data',
     piperWasm: 'https://huggingface.co/rhasspy/piper-neural-strip/resolve/main/piper_0.1.0.wasm'
