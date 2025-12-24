@@ -11,7 +11,7 @@ export const MESPEAK_VOICES = [
     { id: 'fr', name: 'Français', provider: 'meSpeak' },
 ];
 
-export const loadMeSpeakModel = async (voiceId = 'en/en-us', onProgress = () => { }) => {
+export const loadMeSpeakModel = async (_voiceId = 'en/en-us', onProgress = () => { }) => {
     if (initialized) return;
 
     try {
@@ -33,7 +33,7 @@ export const loadMeSpeakModel = async (voiceId = 'en/en-us', onProgress = () => 
     }
 };
 
-export const generateMeSpeakAudio = async (text, voiceId = 'en/en-us') => {
+export const generateMeSpeakAudio = async (text, _voiceId = 'en/en-us') => {
     if (!initialized) {
         await loadMeSpeakModel();
     }

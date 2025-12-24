@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import mammoth from 'mammoth';
 import {
   Book,
@@ -6,15 +6,12 @@ import {
   Play,
   Pause,
   Square,
-  Upload,
   X,
-  FileText,
   Volume2,
-  BookOpen,
-  Sparkles,
-  Key
+  Sparkles
 } from 'lucide-react';
 import './App.css';
+import TextViewer from './TextViewer';
 import { PIPER_VOICES, loadPiperModel, generatePiperAudio } from './utils/piper-engine';
 import { KOKORO_VOICES, loadKokoroModel, generateKokoroAudio } from './utils/kokoro-engine';
 
@@ -107,7 +104,25 @@ function App() {
       vList[0];
   };
 
-  const handleFileUpload = async (e) => {
+  const stopReading = useCallback(() => {
+    synth.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setIsSpeaking(false);
+    setIsPaused(false);
+    currentChunkIndex.current = 0;
+    setProgress(0);
+  }, [synth]);
+
+  const processText = useCallback((rawText) => {
+    setText(rawText);
+    const filteredPara = rawText.split('\n').filter(p => p.trim().length > 0);
+    setParaList(filteredPara);
+  }, []);
+
+  const handleFileUpload = useCallback(async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setIsLoading(true);
@@ -121,19 +136,12 @@ function App() {
         processText(result.value);
       }
       stopReading();
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Erreur de lecture");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const processText = (rawText) => {
-    setText(rawText);
-    const filteredPara = rawText.split('\n').filter(p => p.trim().length > 0);
-    setParaList(filteredPara);
-  };
+  }, [processText, stopReading]);
 
   const chunkText = (str) => {
     const isPremium = provider === 'local';
@@ -256,34 +264,6 @@ function App() {
     setIsPaused(true);
   };
 
-  const stopReading = () => {
-    synth.cancel();
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    setIsSpeaking(false);
-    setIsPaused(false);
-    currentChunkIndex.current = 0;
-    setProgress(0);
-  };
-
-  const handleVoiceKeyDown = (e, voice) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      setSelectedVoice(voice);
-      stopReading();
-    }
-  };
-
-  const handleUploadKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      const input = e.currentTarget.querySelector('input');
-      input?.click();
-    }
-  };
-
   return (
     <div className="app-container">
       <header className="header">
@@ -301,31 +281,11 @@ function App() {
       </header>
 
       <main className="content">
-        {paraList.length > 0 ? (
-          <div className="text-viewer fade-in">
-            <div className="text-content">
-              {paraList.map((para, i) => <p key={i}>{para}</p>)}
-            </div>
-          </div>
-        ) : (
-          <div className="empty-state">
-            <div className="empty-icon-wrap"><BookOpen size={80} color="#DDD" aria-hidden="true" /></div>
-            <h2>Prêt pour une lecture AI?</h2>
-            <p>Importez un livre et activez le mode "Neural (Gratuit)"</p>
-            <label
-              className="upload-button"
-              tabIndex="0"
-              role="button"
-              onKeyDown={handleUploadKeyDown}
-              aria-label="Charger un livre"
-            >
-              <Upload size={20} aria-hidden="true" />
-              <span>Charger un livre</span>
-              <input type="file" accept=".txt,.docx" onChange={handleFileUpload} hidden />
-            </label>
-            {isLoading && <div className="loader" role="status" aria-label="Chargement en cours"></div>}
-          </div>
-        )}
+        <TextViewer
+          paraList={paraList}
+          isLoading={isLoading}
+          handleFileUpload={handleFileUpload}
+        />
       </main>
 
       {paraList.length > 0 && (

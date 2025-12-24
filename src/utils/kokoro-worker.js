@@ -16,7 +16,7 @@ self.onmessage = async (e) => {
                         console.log("WebGPU not available, falling back to WASM");
                         device = "wasm";
                     }
-                } catch (e) {
+                } catch (_e) {
                     device = "wasm";
                 }
 
@@ -34,7 +34,7 @@ self.onmessage = async (e) => {
                                 }));
                                 self.postMessage({ type: 'progress', items: minimalItems });
                             }
-                        } catch (pErr) {
+                        } catch (_pErr) {
                             self.postMessage({ type: 'progress', message: 'loading' });
                         }
                     }
