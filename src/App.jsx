@@ -271,12 +271,8 @@ function App() {
           <Book className="logo-icon" color={COLORS.primary} size={28} aria-hidden="true" />
           <h1>Liseuse Vocale 3.0</h1>
         </div>
-        <button
-          className="icon-button"
-          onClick={() => setShowSettings(true)}
-          aria-label="Paramètres"
-        >
-          <Settings size={24} aria-hidden="true" />
+        <button className="icon-button" onClick={() => setShowSettings(true)} aria-label="Paramètres">
+          <Settings size={24} />
         </button>
       </header>
 
@@ -310,26 +306,14 @@ function App() {
                 <div className="progress-text">{progress}% lu</div>
               </div>
               <div className="player-controls">
-                <button
-                  className="control-button stop"
-                  onClick={stopReading}
-                  aria-label="Arrêter la lecture"
-                >
-                  <Square size={18} fill={COLORS.error} color={COLORS.error} aria-hidden="true" />
+                <button className="control-button stop" onClick={stopReading} aria-label="Arrêter la lecture">
+                  <Square size={18} fill={COLORS.error} color={COLORS.error} />
                 </button>
-                <button
-                  className="play-button"
-                  onClick={isSpeaking ? pauseReading : startReading}
-                  aria-label={isSpeaking ? "Pause" : "Lire"}
-                >
-                  {isSpeaking ? <Pause size={28} fill="#FFF" aria-hidden="true" /> : <Play size={28} fill="#FFF" aria-hidden="true" />}
+                <button className="play-button" onClick={isSpeaking ? pauseReading : startReading} aria-label={isSpeaking ? "Pause" : "Lecture"}>
+                  {isSpeaking ? <Pause size={28} fill="#FFF" /> : <Play size={28} fill="#FFF" />}
                 </button>
-                <button
-                  className="control-button"
-                  onClick={() => setShowSettings(true)}
-                  aria-label="Paramètres de lecture"
-                >
-                  <Settings size={20} aria-hidden="true" />
+                <button className="control-button" onClick={() => setShowSettings(true)} aria-label="Paramètres de lecture">
+                  <Settings size={20} />
                 </button>
               </div>
             </div>
@@ -347,19 +331,13 @@ function App() {
             aria-labelledby="modal-title"
           >
             <div className="modal-header">
-              <h2 id="modal-title">Options de Narration</h2>
-              <button
-                className="icon-button"
-                onClick={() => setShowSettings(false)}
-                aria-label="Fermer les paramètres"
-              >
-                <X size={24} aria-hidden="true" />
-              </button>
+              <h2>Options de Narration</h2>
+              <button className="icon-button" onClick={() => setShowSettings(false)} aria-label="Fermer"><X size={24} /></button>
             </div>
 
             <div className="setting-section">
-              <label id="voice-label">Voix de Lecture</label>
-              <div className="voice-list" role="listbox" aria-labelledby="voice-label">
+              <label>Voix de Lecture</label>
+              <div className="voice-list" role="listbox" aria-label="Liste des voix">
                 {voices.map((v, i) => (
                   <div
                     key={v.voiceURI || i}
@@ -367,8 +345,14 @@ function App() {
                     onClick={() => { setSelectedVoice(v); stopReading(); }}
                     role="option"
                     aria-selected={selectedVoice?.voiceURI === v.voiceURI}
-                    tabIndex="0"
-                    onKeyDown={(e) => handleVoiceKeyDown(e, v)}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedVoice(v);
+                        stopReading();
+                      }
+                    }}
                   >
                     <div className="voice-name">{v.name}</div>
                     <div className="voice-lang">{v.lang}</div>
