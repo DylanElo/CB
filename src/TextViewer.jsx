@@ -40,7 +40,12 @@ const TextViewer = memo(({ paraList, isLoading, handleFileUpload }) => {
       <label className="upload-button">
         <Upload size={20} />
         <span>Charger un livre</span>
-        <input type="file" accept=".txt,.docx" onChange={handleFileUpload} hidden />
+        <input
+          type="file"
+          accept=".txt,.docx"
+          onChange={handleFileUpload}
+          className="visually-hidden"
+        />
       </label>
       {isLoading && <div className="loader"></div>}
     </div>
