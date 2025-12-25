@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Upload, BookOpen } from 'lucide-react';
 
 /**
@@ -7,11 +7,26 @@ import { Upload, BookOpen } from 'lucide-react';
  * This ensures large text content doesn't need to be reconciled on every audio chunk.
  */
 const TextViewer = memo(({ paraList, isLoading, handleFileUpload }) => {
+  const chunks = useMemo(() => {
+    const res = [];
+    const chunkSize = 50;
+    for (let i = 0; i < paraList.length; i += chunkSize) {
+      res.push(paraList.slice(i, i + chunkSize));
+    }
+    return res;
+  }, [paraList]);
+
   if (paraList.length > 0) {
     return (
       <div className="text-viewer fade-in">
         <div className="text-content">
-          {paraList.map((para, i) => <p key={i}>{para}</p>)}
+          {chunks.map((chunk, chunkIndex) => (
+            <div key={chunkIndex} className="text-page">
+              {chunk.map((para, i) => (
+                <p key={chunkIndex * 50 + i}>{para}</p>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     );

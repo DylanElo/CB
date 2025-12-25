@@ -108,8 +108,14 @@
   text-align: justify;
 }
 
+.text-page {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2000px;
+}
+
 .text-content p {
   margin-bottom: 1.5rem;
+  margin-top: 0;
 }
 
 /* Player Bar */
