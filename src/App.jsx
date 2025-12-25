@@ -268,7 +268,7 @@ function App() {
     <div className="app-container">
       <header className="header">
         <div className="logo-container">
-          <Book className="logo-icon" color={COLORS.primary} size={28} />
+          <Book className="logo-icon" color={COLORS.primary} size={28} aria-hidden="true" />
           <h1>Liseuse Vocale 3.0</h1>
         </div>
         <button className="icon-button" onClick={() => setShowSettings(true)} aria-label="Paramètres">
@@ -287,13 +287,20 @@ function App() {
       {paraList.length > 0 && (
         <div className="player-bar-container fade-in">
           <div className="player-bar-extended">
-            <div className="progress-container">
+            <div
+              className="progress-container"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-label="Progression de la lecture"
+            >
               <div className="progress-fill" style={{ width: `${progress}%` }}></div>
             </div>
             <div className="player-main">
               <div className="player-info">
                 <div className="voice-tag">
-                  {provider !== 'standard' ? <Sparkles size={14} color={COLORS.local} /> : <Volume2 size={14} />}
+                  {provider !== 'standard' ? <Sparkles size={14} color={COLORS.local} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}
                   <span>{selectedVoice ? selectedVoice.name : "Voix par défaut"}</span>
                 </div>
                 <div className="progress-text">{progress}% lu</div>
@@ -316,7 +323,13 @@ function App() {
 
       {showSettings && (
         <div className="modal-overlay" onClick={() => setShowSettings(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div
+            className="modal-content"
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+          >
             <div className="modal-header">
               <h2>Options de Narration</h2>
               <button className="icon-button" onClick={() => setShowSettings(false)} aria-label="Fermer"><X size={24} /></button>
