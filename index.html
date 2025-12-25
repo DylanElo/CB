@@ -7,27 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#FDFBF7">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://cdn-lfs.huggingface.co https://hf.co data: blob:; worker-src 'self' blob:; media-src 'self' blob: data:; font-src 'self' data:; upgrade-insecure-requests;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://cdn-lfs.huggingface.co https://hf.co data: blob:; worker-src 'self' blob:; media-src 'self' blob: data:; font-src 'self' data:; upgrade-insecure-requests;">
   <link rel="apple-touch-icon" href="/icon-512.png?v=3">
   <link rel="manifest" href="/manifest.json?v=3" />
-  <title>BookReader - Liseuse Vocale</title>
+  <title>BookReader - Liseuse Vocale 3.0</title>
 </head>
 
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx?v=3"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        // Use relative path for SW to support subdirectory deployment (e.g. GitHub Pages /CB/)
-        navigator.serviceWorker.register('sw.js').then(registration => {
-          console.log('SW registered: ', registration);
-        }).catch(registrationError => {
-          console.log('SW registration failed: ', registrationError);
-        });
-      });
-    }
-  </script>
 </body>
 
 </html>
