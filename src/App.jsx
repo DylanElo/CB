@@ -12,8 +12,7 @@ import {
 } from 'lucide-react';
 import './App.css';
 import TextViewer from './TextViewer';
-import { PIPER_VOICES, loadPiperModel, generatePiperAudio } from './utils/piper-engine';
-import { KOKORO_VOICES, loadKokoroModel, generateKokoroAudio } from './utils/kokoro-engine';
+import { PIPER_VOICES, KOKORO_VOICES } from './utils/voices';
 
 // Using only Standard Web Speech API for reliability
 
@@ -206,9 +205,11 @@ function App() {
       let blob = null;
 
       if (selectedVoice.provider === 'Piper') {
+        const { loadPiperModel, generatePiperAudio } = await import('./utils/piper-engine');
         await loadPiperModel(selectedVoice.id);
         blob = await generatePiperAudio(chunk, selectedVoice.id);
       } else if (selectedVoice.provider === 'Local') {
+        const { loadKokoroModel, generateKokoroAudio } = await import('./utils/kokoro-engine');
         await loadKokoroModel();
         blob = await generateKokoroAudio(chunk, selectedVoice.id);
       }

@@ -13,15 +13,6 @@ try {
 
 import { TtsSession, download } from '@mintplex-labs/piper-tts-web';
 
-// Piper voices - using high quality English voices
-export const PIPER_VOICES = [
-    { id: 'en_US-hfc_female-medium', name: 'HFC Female (US)', lang: 'en-US', provider: 'Piper' },
-    { id: 'en_US-amy-medium', name: 'Amy (US Female)', lang: 'en-US', provider: 'Piper' },
-    { id: 'en_US-lessac-medium', name: 'Lessac (US Natural)', lang: 'en-US', provider: 'Piper' },
-    { id: 'en_GB-alan-medium', name: 'Alan (British Male)', lang: 'en-GB', provider: 'Piper' },
-    { id: 'fr_FR-siwis-medium', name: 'Siwis (French)', lang: 'fr-FR', provider: 'Piper' },
-];
-
 let modelDownloaded = false;
 
 // We need to define the WASM paths manually to force single-threaded execution
