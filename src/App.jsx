@@ -30,6 +30,9 @@ const VERSION = "1.3.3"; // PWA Cache Buster Version
 
 const GEMINI_VOICES = []; // Removed
 
+// Security: Limit input size to prevent denial of service (browser crash)
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 function App() {
   const [text, setText] = useState("");
   const [paraList, setParaList] = useState([]);
@@ -124,6 +127,12 @@ function App() {
   const handleFileUpload = useCallback(async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+      alert("Le fichier est trop volumineux. La limite est de 10MB pour éviter de bloquer le navigateur.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
