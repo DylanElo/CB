@@ -47,7 +47,14 @@ const TextViewer = memo(({ paraList, isLoading, handleFileUpload }) => {
           className="visually-hidden"
         />
       </label>
-      {isLoading && <div className="loader"></div>}
+      {isLoading && (
+        <div
+          className="loader"
+          role="status"
+          aria-live="polite"
+          aria-label="Chargement en cours"
+        ></div>
+      )}
     </div>
   );
 });
