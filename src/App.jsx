@@ -319,8 +319,18 @@ function App() {
                 <button className="control-button stop" onClick={stopReading} aria-label="Arrêter la lecture">
                   <Square size={18} fill={COLORS.error} color={COLORS.error} />
                 </button>
-                <button className="play-button" onClick={isSpeaking ? pauseReading : startReading} aria-label={isSpeaking ? "Pause" : "Lecture"}>
-                  {isSpeaking ? <Pause size={28} fill="#FFF" /> : <Play size={28} fill="#FFF" />}
+                <button
+                  className="play-button"
+                  onClick={isLoading ? undefined : (isSpeaking ? pauseReading : startReading)}
+                  aria-label={isLoading ? "Chargement..." : (isSpeaking ? "Pause" : "Lecture")}
+                  aria-busy={isLoading}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="spinner-white" aria-hidden="true"></div>
+                  ) : (
+                    isSpeaking ? <Pause size={28} fill="#FFF" /> : <Play size={28} fill="#FFF" />
+                  )}
                 </button>
                 <button className="control-button" onClick={() => setShowSettings(true)} aria-label="Paramètres de lecture">
                   <Settings size={20} />
