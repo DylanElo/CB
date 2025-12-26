@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import mammoth from 'mammoth';
 import {
   Book,
   Settings,
@@ -140,7 +139,8 @@ function App() {
         processText(content);
       } else if (file.name.endsWith('.docx')) {
         const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer });
+        const { extractRawText } = await import('mammoth');
+        const result = await extractRawText({ arrayBuffer });
         processText(result.value);
       }
       stopReading();
