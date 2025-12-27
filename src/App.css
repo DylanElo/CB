@@ -559,6 +559,10 @@ input:checked+.slider:before {
   }
 }
 
+.spinner-icon {
+  animation: spin 1s linear infinite;
+}
+
 @media (max-width: 600px) {
   .player-bar-extended {
     max-width: 100%;
