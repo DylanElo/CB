@@ -8,7 +8,8 @@ import {
   Square,
   X,
   Volume2,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import './App.css';
 import TextViewer from './TextViewer';
@@ -319,8 +320,8 @@ function App() {
                 <button className="control-button stop" onClick={stopReading} aria-label="Arrêter la lecture">
                   <Square size={18} fill={COLORS.error} color={COLORS.error} />
                 </button>
-                <button className="play-button" onClick={isSpeaking ? pauseReading : startReading} aria-label={isSpeaking ? "Pause" : "Lecture"}>
-                  {isSpeaking ? <Pause size={28} fill="#FFF" /> : <Play size={28} fill="#FFF" />}
+                <button className="play-button" onClick={isSpeaking ? pauseReading : startReading} aria-label={isLoading ? "Chargement..." : (isSpeaking ? "Pause" : "Lecture")}>
+                  {isLoading ? <Loader2 size={28} color="#FFF" className="spinner-icon" /> : (isSpeaking ? <Pause size={28} fill="#FFF" /> : <Play size={28} fill="#FFF" />)}
                 </button>
                 <button className="control-button" onClick={() => setShowSettings(true)} aria-label="Paramètres de lecture">
                   <Settings size={20} />
@@ -341,7 +342,7 @@ function App() {
             aria-labelledby="modal-title"
           >
             <div className="modal-header">
-              <h2>Options de Narration</h2>
+              <h2 id="modal-title">Options de Narration</h2>
               <button className="icon-button" onClick={() => setShowSettings(false)} aria-label="Fermer"><X size={24} /></button>
             </div>
 
