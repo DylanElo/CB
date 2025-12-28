@@ -12,6 +12,7 @@ import {
 import './App.css';
 import TextViewer from './TextViewer';
 import { PIPER_VOICES, KOKORO_VOICES } from './utils/voices';
+import { sanitizeInputText } from './utils/security';
 
 // Using only Standard Web Speech API for reliability
 
@@ -118,8 +119,9 @@ function App() {
   }, [synth]);
 
   const processText = useCallback((rawText) => {
-    setText(rawText);
-    const filteredPara = rawText.split('\n').filter(p => p.trim().length > 0);
+    const sanitized = sanitizeInputText(rawText);
+    setText(sanitized);
+    const filteredPara = sanitized.split('\n').filter(p => p.trim().length > 0);
     setParaList(filteredPara);
   }, []);
 
