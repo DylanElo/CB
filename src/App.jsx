@@ -7,7 +7,8 @@ import {
   Square,
   X,
   Volume2,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import './App.css';
 import TextViewer from './TextViewer';
@@ -393,7 +394,7 @@ function App() {
             aria-labelledby="modal-title"
           >
             <div className="modal-header">
-              <h2>Options de Narration</h2>
+              <h2 id="modal-title">Options de Narration</h2>
               <button className="icon-button" onClick={() => setShowSettings(false)} aria-label="Fermer"><X size={24} /></button>
             </div>
 
