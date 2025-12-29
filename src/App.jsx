@@ -32,6 +32,7 @@ const GEMINI_VOICES = []; // Removed
 
 // Security: Limit input size to prevent denial of service (browser crash)
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_TEXT_LENGTH = 1000000; // 1 Million characters (~1MB raw text) to prevent DOM freeze
 
 // Helper functions moved outside component to prevent recreation on render
 const sortVoices = (vList) => {
@@ -180,9 +181,21 @@ function App() {
   }, [synth]);
 
   const processText = useCallback((rawText) => {
-    setText(rawText);
-    const filteredPara = rawText.split('\n').filter(p => p.trim().length > 0);
-    setParaList(filteredPara);
+    // Security: Sanitize text to remove control characters but keep newlines/tabs
+    // This prevents potential issues with rendering strange unicode sequences
+    // eslint-disable-next-line no-control-regex
+    const sanitized = rawText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+
+    if (sanitized.length > MAX_TEXT_LENGTH) {
+      alert(`Le texte est trop long (${sanitized.length} caractères). Il a été tronqué à ${MAX_TEXT_LENGTH} pour éviter de bloquer le navigateur.`);
+      setText(sanitized.slice(0, MAX_TEXT_LENGTH));
+      const filteredPara = sanitized.slice(0, MAX_TEXT_LENGTH).split('\n').filter(p => p.trim().length > 0);
+      setParaList(filteredPara);
+    } else {
+      setText(sanitized);
+      const filteredPara = sanitized.split('\n').filter(p => p.trim().length > 0);
+      setParaList(filteredPara);
+    }
   }, []);
 
   const handleFileUpload = useCallback(async (e) => {
@@ -196,20 +209,27 @@ function App() {
 
     setIsLoading(true);
     try {
-      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+      const fileName = file.name.toLowerCase();
+
+      if (fileName.endsWith('.txt') || file.type === 'text/plain') {
         const content = await file.text();
         processText(content);
-      } else if (file.name.endsWith('.docx')) {
+      } else if (fileName.endsWith('.docx')) {
         const arrayBuffer = await file.arrayBuffer();
         const { extractRawText } = await import('mammoth');
         const result = await extractRawText({ arrayBuffer });
         processText(result.value);
+      } else {
+        alert("Format de fichier non supporté. Veuillez utiliser .txt ou .docx");
       }
       stopReading();
-    } catch {
-      alert("Erreur de lecture");
+    } catch (err) {
+      console.error("File read error", err); // Keep for debugging but sanitize sensitive info if needed
+      alert("Erreur de lecture du fichier.");
     } finally {
       setIsLoading(false);
+      // Reset input so same file can be selected again if needed
+      e.target.value = null;
     }
   }, [processText, stopReading]);
 
