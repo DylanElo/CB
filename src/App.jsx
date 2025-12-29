@@ -13,6 +13,7 @@ import {
 import './App.css';
 import TextViewer from './TextViewer';
 import { PIPER_VOICES, KOKORO_VOICES } from './utils/voices';
+import { sanitizeInputText } from './utils/security';
 
 // Using only Standard Web Speech API for reliability
 
