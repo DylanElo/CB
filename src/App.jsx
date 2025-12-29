@@ -182,10 +182,8 @@ function App() {
   }, [synth]);
 
   const processText = useCallback((rawText) => {
-    // Security: Sanitize text to remove control characters but keep newlines/tabs
-    // This prevents potential issues with rendering strange unicode sequences
-    // eslint-disable-next-line no-control-regex
-    const sanitized = rawText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    // Security: Sanitize text to remove control characters, normalize unicode, and strip dangerous sequences
+    const sanitized = sanitizeInputText(rawText);
 
     if (sanitized.length > MAX_TEXT_LENGTH) {
       alert(`Le texte est trop long (${sanitized.length} caractères). Il a été tronqué à ${MAX_TEXT_LENGTH} pour éviter de bloquer le navigateur.`);
