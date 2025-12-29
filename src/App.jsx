@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import mammoth from 'mammoth';
 import {
   Book,
   Settings,
@@ -33,6 +32,83 @@ const GEMINI_VOICES = []; // Removed
 
 // Security: Limit input size to prevent denial of service (browser crash)
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+// Helper functions moved outside component to prevent recreation on render
+const sortVoices = (vList) => {
+  return [...vList].sort((a, b) => {
+    const langA = (a.lang || '').toLowerCase();
+    const langB = (b.lang || '').toLowerCase();
+    if (langA.includes('fr') && !langB.includes('fr')) return -1;
+    if (!langA.includes('fr') && langB.includes('fr')) return 1;
+    return a.name.localeCompare(b.name);
+  });
+};
+
+const setDefaultVoice = (vList) => {
+  return vList.find(v => v.lang.includes('fr')) ||
+    vList.find(v => v.lang.includes('en')) ||
+    vList[0];
+};
+
+/**
+ * Optimized text chunking
+ * Uses iterative scanning instead of regex match to avoid memory spikes with large texts.
+ * Also correctly preserves leading terminators (e.g. "...") which were stripped by the previous regex.
+ */
+const chunkText = (str, provider) => {
+  const isPremium = provider === 'local';
+  const maxLength = isPremium ? 200 : 250; // Smaller chunks for Local AI results in better UI responsiveness
+  const finalChunks = [];
+
+  let scanIndex = 0;
+  let chunkBuilder = "";
+
+  // Match one or more terminators, or end of string
+  const re = /[.!?]+|$/g;
+  let match;
+
+  while (scanIndex < str.length) {
+    re.lastIndex = scanIndex;
+    match = re.exec(str);
+
+    if (match) {
+      const endOfPart = match.index + match[0].length;
+      let part;
+
+      if (match[0].length === 0 && match.index === str.length) {
+        // End of string matched
+        part = str.slice(scanIndex);
+        if (part === "") break;
+      } else {
+        // Terminator matched
+        part = str.slice(scanIndex, endOfPart);
+      }
+
+      if ((chunkBuilder.length + part.length) > maxLength && chunkBuilder.length > 0) {
+        finalChunks.push(chunkBuilder.trim());
+        chunkBuilder = part;
+      } else {
+        chunkBuilder += part;
+      }
+
+      scanIndex = endOfPart;
+      if (scanIndex >= str.length) break;
+    } else {
+      // Fallback (should not happen due to |$)
+      const part = str.slice(scanIndex);
+      if ((chunkBuilder.length + part.length) > maxLength && chunkBuilder.length > 0) {
+        finalChunks.push(chunkBuilder.trim());
+        chunkBuilder = part;
+      } else {
+        chunkBuilder += part;
+      }
+      break;
+    }
+  }
+
+  if (chunkBuilder) finalChunks.push(chunkBuilder.trim());
+  return finalChunks.filter(c => c.length > 0);
+};
 
 function App() {
   const [text, setText] = useState("");
@@ -91,22 +167,6 @@ function App() {
     localStorage.setItem('tts_provider', provider);
   }, [provider]);
 
-  const sortVoices = (vList) => {
-    return [...vList].sort((a, b) => {
-      const langA = (a.lang || '').toLowerCase();
-      const langB = (b.lang || '').toLowerCase();
-      if (langA.includes('fr') && !langB.includes('fr')) return -1;
-      if (!langA.includes('fr') && langB.includes('fr')) return 1;
-      return a.name.localeCompare(b.name);
-    });
-  };
-
-  const setDefaultVoice = (vList) => {
-    return vList.find(v => v.lang.includes('fr')) ||
-      vList.find(v => v.lang.includes('en')) ||
-      vList[0];
-  };
-
   const stopReading = useCallback(() => {
     synth.cancel();
     if (audioRef.current) {
@@ -141,7 +201,8 @@ function App() {
         processText(content);
       } else if (file.name.endsWith('.docx')) {
         const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer });
+        const { extractRawText } = await import('mammoth');
+        const result = await extractRawText({ arrayBuffer });
         processText(result.value);
       }
       stopReading();
@@ -151,25 +212,6 @@ function App() {
       setIsLoading(false);
     }
   }, [processText, stopReading]);
-
-  const chunkText = (str) => {
-    const isPremium = provider === 'local';
-    const maxLength = isPremium ? 200 : 250; // Smaller chunks for Local AI results in better UI responsiveness
-    const parts = str.match(/[^.!?]+[.!?]*|/g) || [str];
-    const finalChunks = [];
-
-    let currentChunk = "";
-    for (const part of parts) {
-      if ((currentChunk + part).length > maxLength && currentChunk) {
-        finalChunks.push(currentChunk.trim());
-        currentChunk = part;
-      } else {
-        currentChunk += part;
-      }
-    }
-    if (currentChunk) finalChunks.push(currentChunk.trim());
-    return finalChunks.filter(c => c.length > 0);
-  };
 
   const speakNextChunk = async () => {
     if (currentChunkIndex.current >= chunks.current.length) {
@@ -263,7 +305,7 @@ function App() {
       return;
     }
     stopReading();
-    chunks.current = chunkText(text);
+    chunks.current = chunkText(text, provider);
     setIsSpeaking(true);
     speakNextChunk();
   };
@@ -320,8 +362,18 @@ function App() {
                 <button className="control-button stop" onClick={stopReading} aria-label="Arrêter la lecture">
                   <Square size={18} fill={COLORS.error} color={COLORS.error} />
                 </button>
-                <button className="play-button" onClick={isSpeaking ? pauseReading : startReading} aria-label={isLoading ? "Chargement..." : (isSpeaking ? "Pause" : "Lecture")}>
-                  {isLoading ? <Loader2 size={28} color="#FFF" className="spinner-icon" /> : (isSpeaking ? <Pause size={28} fill="#FFF" /> : <Play size={28} fill="#FFF" />)}
+                <button
+                  className="play-button"
+                  onClick={isLoading ? undefined : (isSpeaking ? pauseReading : startReading)}
+                  aria-label={isLoading ? "Chargement..." : (isSpeaking ? "Pause" : "Lecture")}
+                  aria-busy={isLoading}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="spinner-white" aria-hidden="true"></div>
+                  ) : (
+                    isSpeaking ? <Pause size={28} fill="#FFF" /> : <Play size={28} fill="#FFF" />
+                  )}
                 </button>
                 <button className="control-button" onClick={() => setShowSettings(true)} aria-label="Paramètres de lecture">
                   <Settings size={20} />
