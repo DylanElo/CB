@@ -26,8 +26,12 @@ const WASM_PATHS = {
         'ort-wasm.wasm': './ort-wasm-simd.wasm'
     },
     // Default Piper WASM paths (copied from library source defaults)
-    piperData: 'https://huggingface.co/rhasspy/piper-neural-strip/resolve/main/piper_0.1.0.data',
-    piperWasm: 'https://huggingface.co/rhasspy/piper-neural-strip/resolve/main/piper_0.1.0.wasm'
+    // In production, the app is served from /CB/, so we need to account for that if we use absolute paths or verify relative resolution.
+    // However, ./ should resolve relative to the current module or HTML base.
+    // Given the deployment structure, we might need to be careful.
+    // But since ort-wasm uses ./, we'll stick with that.
+    piperData: './piper_0.1.0.data',
+    piperWasm: './piper_0.1.0.wasm'
 };
 
 export const loadPiperModel = async (voiceId = 'en_US-hfc_female-medium', onProgress = () => { }) => {
