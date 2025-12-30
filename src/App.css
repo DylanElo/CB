@@ -44,6 +44,12 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
+.icon-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
 .content {
   flex: 1;
   overflow-y: auto;
@@ -209,12 +215,23 @@
   transform: scale(1.05);
 }
 
+.play-button:focus-visible {
+  outline: 3px solid var(--secondary);
+  outline-offset: 2px;
+}
+
 .control-button {
   background: transparent;
   border: none;
   cursor: pointer;
   color: var(--text);
   padding: 0.25rem;
+}
+
+.control-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Modal */
@@ -295,6 +312,12 @@
 .voice-item.active {
   background: rgba(74, 144, 226, 0.1);
   border-left: 4px solid var(--primary);
+}
+
+.voice-item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  background: rgba(74, 144, 226, 0.05);
 }
 
 .voice-name {
