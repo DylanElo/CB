@@ -7,3 +7,8 @@
 **Vulnerability:** Text chunking logic relied on punctuation delimiters (`/[.!?]+|$/g`). A malicious input containing a very long string without punctuation (e.g. >1MB of "a") would result in a single massive chunk. This could crash the TTS engine, freeze the UI thread, or exhaust browser memory.
 **Learning:** Regex-based splitting without a fallback hard limit is a Denial of Service vector.
 **Prevention:** Implement a recursive or iterative splitting strategy that strictly enforces a maximum chunk length (`maxLength`). If no natural delimiter is found within the limit, force a split at `maxLength` to ensure system stability.
+
+## 2026-01-01 - Content Security Policy Hardening
+**Vulnerability:** The initial CSP lacked protections against object injection (`object-src`), base tag hijacking (`base-uri`), and form submission hijacking (`form-action`). Additionally, Referrer Policy was undefined, potentially leaking path information to cross-origin requests.
+**Learning:** Default "strict-ish" CSPs often miss older vectors like `<object>` or `<base>`, which can still be exploitable. Explicitly denying unused features is safer than relying on defaults.
+**Prevention:** Explicitly set `object-src 'none'`, `base-uri 'self'`, and `form-action 'self'` in the CSP. Add `Referrer-Policy: strict-origin-when-cross-origin` to prevent leakage.
