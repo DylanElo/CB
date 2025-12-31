@@ -14,6 +14,8 @@ try {
 import { TtsSession, download } from '@mintplex-labs/piper-tts-web';
 
 let modelDownloaded = false;
+let currentSession = null;
+let currentVoiceId = null;
 
 // We need to define the WASM paths manually to force single-threaded execution
 // for onnxruntime-web, avoiding the "function signature mismatch" error.
@@ -53,16 +55,31 @@ export const loadPiperModel = async (voiceId = 'en_US-hfc_female-medium', onProg
 export const generatePiperAudio = async (text, voiceId = 'en_US-hfc_female-medium') => {
     const startTime = performance.now();
 
-    // Create session manually to inject custom WASM paths
-    const session = new TtsSession({
-        voiceId: voiceId,
-        wasmPaths: WASM_PATHS,
-        logger: (msg) => console.log(`[Piper]: ${msg}`)
-    });
+    // Optimization: Reuse existing session if the voice hasn't changed.
+    // Creating a new TtsSession is expensive as it initializes the ONNX runtime and loads the model.
+    if (!currentSession || currentVoiceId !== voiceId) {
+        console.log(`[Piper] Initializing new session for voice: ${voiceId}`);
+        // Create session manually to inject custom WASM paths
+        currentSession = new TtsSession({
+            voiceId: voiceId,
+            wasmPaths: WASM_PATHS,
+            logger: (msg) => console.log(`[Piper]: ${msg}`)
+        });
+        currentVoiceId = voiceId;
+    } else {
+        console.log(`[Piper] Reusing existing session for voice: ${voiceId}`);
+    }
 
-    // predict() returns a WAV Blob
-    const wav = await session.predict(text);
-
-    console.log(`Piper generation took ${Math.round(performance.now() - startTime)}ms`);
-    return wav; // Already a Blob
+    try {
+        // predict() returns a WAV Blob
+        const wav = await currentSession.predict(text);
+        console.log(`Piper generation took ${Math.round(performance.now() - startTime)}ms`);
+        return wav; // Already a Blob
+    } catch (err) {
+        // If prediction fails, invalidate the session so we try fresh next time
+        console.error("[Piper] Generation failed, invalidating session.", err);
+        currentSession = null;
+        currentVoiceId = null;
+        throw err;
+    }
 };
