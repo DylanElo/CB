@@ -62,6 +62,29 @@ const chunkText = (str, provider) => {
   const maxLength = isPremium ? 200 : 250; // Smaller chunks for Local AI results in better UI responsiveness
   const finalChunks = [];
 
+  // Helper to split long text segments safely
+  const processLongPart = (part) => {
+    const result = [];
+    let remaining = part;
+
+    while (remaining.length > maxLength) {
+      // Try to split at the last space within the limit to preserve words
+      let splitIndex = remaining.lastIndexOf(' ', maxLength);
+
+      // If no space found, or space is at the very beginning (prevention of infinite loop), hard split
+      if (splitIndex <= 0) {
+        splitIndex = maxLength;
+      }
+
+      result.push(remaining.slice(0, splitIndex).trim());
+      remaining = remaining.slice(splitIndex);
+    }
+    if (remaining.trim().length > 0) {
+      result.push(remaining.trim());
+    }
+    return result;
+  };
+
   let scanIndex = 0;
   let chunkBuilder = "";
 
@@ -86,7 +109,15 @@ const chunkText = (str, provider) => {
         part = str.slice(scanIndex, endOfPart);
       }
 
-      if ((chunkBuilder.length + part.length) > maxLength && chunkBuilder.length > 0) {
+      // Security Fix: Prevent huge chunks from blocking the thread/TTS
+      if (part.length > maxLength) {
+        if (chunkBuilder.length > 0) {
+          finalChunks.push(chunkBuilder.trim());
+          chunkBuilder = "";
+        }
+        const subChunks = processLongPart(part);
+        subChunks.forEach(c => finalChunks.push(c));
+      } else if ((chunkBuilder.length + part.length) > maxLength && chunkBuilder.length > 0) {
         finalChunks.push(chunkBuilder.trim());
         chunkBuilder = part;
       } else {
@@ -98,7 +129,14 @@ const chunkText = (str, provider) => {
     } else {
       // Fallback (should not happen due to |$)
       const part = str.slice(scanIndex);
-      if ((chunkBuilder.length + part.length) > maxLength && chunkBuilder.length > 0) {
+      if (part.length > maxLength) {
+        if (chunkBuilder.length > 0) {
+          finalChunks.push(chunkBuilder.trim());
+          chunkBuilder = "";
+        }
+        const subChunks = processLongPart(part);
+        subChunks.forEach(c => finalChunks.push(c));
+      } else if ((chunkBuilder.length + part.length) > maxLength && chunkBuilder.length > 0) {
         finalChunks.push(chunkBuilder.trim());
         chunkBuilder = part;
       } else {
