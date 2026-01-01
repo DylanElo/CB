@@ -169,6 +169,11 @@ function App() {
   const chunks = useRef([]);
   const audioRef = useRef(null);
 
+  // Optimization: specific refs for lazy memoization of chunks
+  const lastChunkedText = useRef(null);
+  const lastProvider = useRef(null);
+  const cachedChunks = useRef([]);
+
   useEffect(() => {
     const loadVoices = () => {
       const standardVoices = synth.getVoices().map(v => ({
@@ -362,7 +367,19 @@ function App() {
       return;
     }
     stopReading();
-    chunks.current = chunkText(text, provider);
+
+    // Lazy Memoization: Only re-chunk if text or provider changed
+    // This avoids blocking the main thread during "Play" (measured ~240ms for 1.5MB text)
+    if (lastChunkedText.current !== text || lastProvider.current !== provider) {
+      const newChunks = chunkText(text, provider);
+      cachedChunks.current = newChunks;
+      chunks.current = [...newChunks]; // Consume a copy to keep cache pristine
+      lastChunkedText.current = text;
+      lastProvider.current = provider;
+    } else {
+      chunks.current = [...cachedChunks.current]; // Consume a copy from cache
+    }
+
     setIsSpeaking(true);
     speakNextChunk();
   };
